@@ -1,3 +1,10 @@
+"""
+@file Logger.py
+@brief Python Logger tested on both Linux and Windows operating systems that provides file logging and console log
+       operations.  I use this in many of my projects; It only makes sense to give it its own repository.
+@author Jacob Taylor Cassady jacobtaylorcassady@outlook.com
+"""
+from __future__ import annotations
 from datetime import datetime
 from enum import IntEnum
 from platform import system
@@ -28,8 +35,9 @@ class Logger(object):
             # Ensure log directory exists
             makedirs(abspath(self.log_location), exist_ok=True)
 
-    def log(self, message: str, status: IntEnum) -> None:
+    def log(self, message: str, status: LogStatus) -> None:
         """
+        Logs a message to a file and to the console given a status.
 
         :param message:
         :param status:
@@ -40,7 +48,7 @@ class Logger(object):
         Logger.console_log(message, status)
 
     @staticmethod
-    def log_to_file(log_file_location: str, message: str, status: IntEnum) -> None:
+    def log_to_file(log_file_location: str, message: str, status: LogStatus) -> None:
         """
 
         :param log_file_location:
@@ -52,7 +60,7 @@ class Logger(object):
             log_file.write(datetime.now().strftime('%H:%M:%S.%f')[:-3] + ' - [{}]'.format(str(status)) + ' - ' + message + '\n')
 
     @staticmethod
-    def console_log(message: str, status: IntEnum) -> None:
+    def console_log(message: str, status: LogStatus) -> None:
         """
 
         :param message:
