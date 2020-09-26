@@ -1,35 +1,65 @@
 from datetime import datetime
 from enum import IntEnum
-import os
-import platform
+from platform import system
 from typing import Union
+from os import getcwd, makedirs
+from os.path import sep, abspath
 
 
 class Logger(object):
-    def __init__(self, file_log: bool = True, log_location: Union[str, None] = None) -> None:
-        # Determine operating system
-        self.system_platform = platform.system()
+    """
 
+    """
+    def __init__(self, file_log: bool = True, log_location: Union[str, None] = None) -> None:
+        """
+        Constructor.
+
+        :param file_log:
+        :param log_location:
+        """
         self.file_log = file_log
+
         if file_log:
             if log_location is None:
-                self.log_location = os.getcwd() + os.path.sep + ".." + os.path.sep + "Logs" + os.path.sep + datetime.now().strftime('%Y_%m_%d_%H_%M_%S_%f')[:-3] + ".log"
+                self.log_location = getcwd() + sep + ".." + sep + "Logs" + sep + datetime.now().strftime('%Y_%m_%d_%H_%M_%S_%f')[:-3] + ".log"
             else:
                 self.log_location = log_location
 
+            # Ensure log directory exists
+            makedirs(abspath(self.log_location), exist_ok=True)
+
     def log(self, message: str, status: IntEnum) -> None:
+        """
+
+        :param message:
+        :param status:
+        :return:
+        """
         if self.file_log:
             Logger.log_to_file(self.log_location, message, status)
         Logger.console_log(message, status)
 
     @staticmethod
     def log_to_file(log_file_location: str, message: str, status: IntEnum) -> None:
+        """
+
+        :param log_file_location:
+        :param message:
+        :param status:
+        :return:
+        """
         with open(log_file_location, 'a+') as log_file:
             log_file.write(datetime.now().strftime('%H:%M:%S.%f')[:-3] + ' - [{}]'.format(str(status)) + ' - ' + message + '\n')
 
     @staticmethod
     def console_log(message: str, status: IntEnum) -> None:
-        system_platform = platform.system()
+        """
+
+        :param message:
+        :param status:
+        :return:
+        """
+        system_platform = system()
 
         if system_platform == 'Windows':
             from printy import printy
@@ -63,6 +93,9 @@ class Logger(object):
                 print(Fore.WHITE + datetime.now().strftime('%H:%M:%S.%f')[:-3] + Fore.RED + ' INVALID LOG FORMAT. Please check int value.')
 
     class LogStatus(IntEnum):
+        """
+
+        """
         SUCCESS = 1
         FAIL = 2
         COMMUNICATION = 3
