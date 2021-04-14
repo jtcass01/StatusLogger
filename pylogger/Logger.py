@@ -11,17 +11,17 @@ from platform import system
 from typing import Union
 from os import getcwd, makedirs
 from os.path import sep, abspath
-from termcolor import colored
 
 
 class Logger(object):
     """"""
-    def __init__(self, file_log: bool = True, log_location: Union[str, None] = None) -> None:
+    def __init__(self, file_log: bool = True, log_location: Union[str, None] = None, use_timestamp: bool = True) -> None:
         """Constructor.
         Args:
             file_log (bool, optional): [description]. Defaults to True.
             log_location (Union[str, None], optional): [description]. Defaults to None."""
         self.file_log: bool = file_log
+        self.use_timestamp: bool = use_timestamp
 
         if file_log:
             if log_location is None:
@@ -39,51 +39,66 @@ class Logger(object):
             status (LogStatus): [description]"""
         if self.file_log:
             Logger.log_to_file(log_file_location=self.log_location,
-                               message=message, message_type=message_type)
-        Logger.console_log(message=message, message_type=message_type)
+                               message=message, message_type=message_type,
+                               use_timestamp=self.use_timestamp)
+        Logger.console_log(message=message, message_type=message_type, use_timestamp=self.use_timestamp)
 
     @staticmethod
-    def log_to_file(log_file_location: str, message: str, message_type: MESSAGE_TYPE) -> None:
+    def log_to_file(log_file_location: str, message: str, message_type: MESSAGE_TYPE, use_timestamp: bool = True) -> None:
         """[summary]
         Args:
             log_file_location (str): [description]
             message (str): [description]
             status (LogStatus): [description]"""
         with open(log_file_location, 'a+') as log_file:
-            log_file.write(datetime.now().strftime('%H:%M:%S.%f')[:-3] + ' - [{}]'.format(str(message_type)) + ' - ' + message + '\n')
+            if use_timestamp:
+                log_file.write('{}: [{}] {}\n'.format(datetime.now().strftime('%H:%M:%S.%f')[:-3],
+                                                      message_type,
+                                                      message))
+            else:
+                log_file.write(message + '\n')
 
-    def verbose_console_log(verbose: bool, message: str, message_type: MESSAGE_TYPE) -> None:
+    def verbose_console_log(verbose: bool, message: str, message_type: MESSAGE_TYPE, use_timestamp: bool = True) -> None:
         """[summary]
         Args:
             verbose (bool): [description]
             message (str): [description]
             message_type (MESSAGE_TYPE): [description]"""
         if verbose:
-            Logger.console_log(message=message, message_type=message_type)
+            Logger.console_log(message=message, message_type=message_type, use_timestamp=use_timestamp)
 
     @staticmethod
-    def console_log(message: str, message_type: MESSAGE_TYPE) -> None:
+    def console_log(message: str, message_type: MESSAGE_TYPE, use_timestamp: bool = True) -> None:
         """[summary]
         Args:
             message (str): [description]
             status (LogStatus): [description]"""
         system_platform = system()
-        time_string = datetime.now().strftime('%H:%M:%S.%f')[:-3]
+
+        if use_timestamp:
+            time_string = datetime.now().strftime('%H:%M:%S.%f')[:-3] + ":"
+        else:
+            time_string = ""
 
         if system_platform == 'Windows':
+            from printy import printy
 
-            if message_type == Logger.MESSAGE_TYPE.SUCCESS:
-                print(colored(text=time_string, color="white"), colored(text=message, color="green"))
-            elif message_type == Logger.MESSAGE_TYPE.FAIL:
-                print(colored(text=time_string, color="white"), colored(text=message, color="red"))
-            elif message_type == Logger.MESSAGE_TYPE.STATUS:
-                print(colored(text=time_string, color="white"), colored(text=message, color="cyan"))
-            elif message_type == Logger.MESSAGE_TYPE.MINOR_FAIL:
-                print(colored(text=time_string, color="white"), colored(text=message, color="magenta"))
-            elif message_type == Logger.MESSAGE_TYPE.WARNING:
-                print(colored(text=time_string, color="white"), colored(text=message, color="yellow"))
-            else:
-                print(colored(text=time_string, color="white"), colored(text=message, color="red"))
+            try:
+                if message_type == Logger.MESSAGE_TYPE.SUCCESS:
+                    printy(time_string + '[n]' + ' ' + message + '@', predefined='w')  # SUCCESS
+                elif message_type == Logger.MESSAGE_TYPE.FAIL:
+                    printy(time_string + '[r]' + ' ' + message + '@', predefined='w')  # FAIL
+                elif message_type == Logger.MESSAGE_TYPE.STATUS:
+                    printy(time_string + '[c]' + ' ' + message + '@', predefined='w')
+                elif message_type == Logger.MESSAGE_TYPE.MINOR_FAIL:
+                    printy(time_string + '[r>]' + ' ' + message + '@', predefined='w') # Minor Fail
+                elif message_type == Logger.MESSAGE_TYPE.WARNING:
+                    printy(time_string + '[y]' + ' ' + message + '@', predefined='w')
+                else:
+                    printy(time_string + '[r]' + ' ' + 'INVALID LOG FORMAT. Please check int value.' + '@', predefined='w')
+            except:
+                printy(time_string + '[r]' + ' ' + 'Failed to understand log call. Wrong format when calling log.' + '@', predefined='w') # wrong format
+
         else:
             from colorama import Fore
 
