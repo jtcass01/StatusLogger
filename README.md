@@ -61,7 +61,9 @@
    ```Bash
    python -m pip install .
    ```
-   or
+
+  or
+
    ```Bash
    python build.py
    ```
