@@ -7,5 +7,5 @@ __email__ = "jacob.t.cassady@nasa.gov"
 from os import system
 
 if __name__ == "__main__":
-    system('pip uninstall pylogger -y')
+    system('pip uninstall StatusLogger -y')
     system('pip install .')

@@ -5,15 +5,15 @@ if __name__ == "__main__":
     long_description = readme.read()
     readme.close()
 
-    setup(name="pylogger",
+    setup(name="StatusLogger",
           version="0.1",
           author="Jacob Taylor Cassady",
           description="Timestamped and Colored Logging Module",
           long_description=long_description,
           long_description_content_type="text/markdown",
-          url="https://github.com/jtcass01/PyLogger",
+          url="https://github.com/jtcass01/StatusLogger",
           packages=find_packages(),
           classifiers=[
               "Programming Language :: Python :: 3"
           ],
-          python_requires=">=3.6")
+          python_requires=">=3.7")
