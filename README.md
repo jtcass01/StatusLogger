@@ -23,8 +23,8 @@
     <li>
       <a href="#getting-started">Getting Started</a>
       <ul>
-        <li><a href="#prerequisites">Prerequisites</a></li>
-        <li><a href="#installation">Installation</a></li>
+        <li><a href="#prerequisites">Install 3rd Party Modules</a></li>
+        <li><a href="#installation">Install StatusLogger</a></li>
       </ul>
     </li>
     <li><a href="#usage">Usage</a></li>
@@ -36,38 +36,29 @@
 
 
 <!-- GETTING STARTED -->
-## Getting Started
+## Getting Started - Clone the repo
+```Bash
+git clone https://github.com/jtcass01/StatusLogger.git
+```
 
-1. Clone the repo
-  ```Bash
-  git clone https://github.com/jtcass01/StatusLogger.git
-  ```
+### Install 3rd Party Modules
+- Needed for Linux
+```Bash
+python -m pip install colorama
+```
+- Needed for Windows
+```Bash
+python -m pip install printy
+```
 
-### Prerequisites
-
-2. Install 3rd Party Modules
-  - Needed for Linux
-   ```Bash
-   python -m pip install colorama
-   ```
-  - Needed for Windows
-   ```Bash
-   python -m pip install printy
-   ```
-
-### Installation
-
-3. Install StatusLogger from within StatusLogger directory
-
-   ```Bash
-   python -m pip install .
-   ```
-
-   or
-
-   ```Bash
-   python build.py
-   ```
+### Install StatusLogger from within StatusLogger directory
+```Bash
+python -m pip install .
+```
+or
+```Bash
+python build.py
+```
 
 <!-- USAGE EXAMPLES -->
 ## Usage
