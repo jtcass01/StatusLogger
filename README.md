@@ -58,11 +58,12 @@
 ### Installation
 
 3. Install StatusLogger from within StatusLogger directory
+
    ```Bash
    python -m pip install .
    ```
 
-  or
+   or
 
    ```Bash
    python build.py
