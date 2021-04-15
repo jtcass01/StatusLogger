@@ -36,7 +36,8 @@
 
 
 <!-- GETTING STARTED -->
-## Getting Started - Clone the repo
+## Getting Started
+- Clone the repo
 ```Bash
 git clone https://github.com/jtcass01/StatusLogger.git
 ```
@@ -51,7 +52,8 @@ python -m pip install colorama
 python -m pip install printy
 ```
 
-### Install StatusLogger from within StatusLogger directory
+### Install StatusLogger
+- Run from within StatusLogger directory
 ```Bash
 python -m pip install .
 ```
