@@ -23,8 +23,8 @@
     <li>
       <a href="#getting-started">Getting Started</a>
       <ul>
-        <li><a href="#prerequisites">Install 3rd Party Modules</a></li>
-        <li><a href="#installation">Install StatusLogger</a></li>
+        <li><a href="#install-3rd-party-modules">Install 3rd Party Modules</a></li>
+        <li><a href="#install-statuslogger">Install StatusLogger</a></li>
       </ul>
     </li>
     <li><a href="#usage">Usage</a></li>
