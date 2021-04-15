@@ -67,7 +67,7 @@ python build.py
 
 - Console Logging
   ```Python
-  from StatusLogger.Logger import Logger
+  from StatusLogger import Logger
   
   Logger.console_log(message="Hello World.", message_type=Logger.MESSAGE_TYPE.SUCCESS)
   ```
