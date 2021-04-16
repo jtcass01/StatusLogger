@@ -1,6 +1,10 @@
 <!-- PROJECT LOGO -->
 <br />
 <p align="center">
+  <a href="https://github.com/jtcass01/StatusLogger">
+    <img src="images/StatueOfLiberty_StarryNightVanGogh_ImageTransfer.png" alt="Logo">
+  </a>
+
   <h3 align="center">Status Logger</h3>
 
   <p align="center">
