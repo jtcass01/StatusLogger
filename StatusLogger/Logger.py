@@ -93,7 +93,7 @@ class Logger(Thread):
         self.queue.append(message)
         self.lock.release()
 
-    def log(self, message: str, message_type: Message.MESSAGE_TYPE, use_timestamp: bool) -> None:
+    def log(self, message: str, message_type: Message.MESSAGE_TYPE, use_timestamp: bool = True) -> None:
         """Logs a message to a file and to the console given a status.
         Args:
             message (str): [description]
