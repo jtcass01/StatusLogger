@@ -5,46 +5,106 @@ from __future__ import annotations
 __author__ = "Jacob Taylor Casasdy"
 __email__ = "jacobtaylorcassady@outlook.com"
 
+# Built-in Modules
 from datetime import datetime
-from enum import Enum
 from platform import system
-from typing import Union
+from typing import Union, List
 from os import getcwd, makedirs
-from os.path import sep, abspath
+from os.path import abspath, join
+from threading import Thread, Lock
+from time import sleep
 
+# StatusLogger Modules
+from StatusLogger import Message
 
-class Logger(object):
+class Logger(Thread):
     """"""
-    def __init__(self, file_log: bool = True, log_location: Union[str, None] = None, use_timestamp: bool = True) -> None:
+    def __init__(self, name: str, file_log: bool = False, log_directory: Union[str, None] = None, verbose: bool = False, rate: float = 1) -> None:
         """Constructor.
         Args:
             file_log (bool, optional): [description]. Defaults to True.
             log_location (Union[str, None], optional): [description]. Defaults to None."""
-        self.file_log: bool = file_log
-        self.use_timestamp: bool = use_timestamp
+        Thread.__init__(self, name=name + "_log_thread")
 
         if file_log:
-            if log_location is None:
-                self.log_location = getcwd() + sep + ".." + sep + "Logs" + sep + datetime.now().strftime('%Y_%m_%d_%H_%M_%S_%f')[:-3] + ".log"
+            if log_directory is None:
+                log_directory = join(getcwd(), "logs")
+
+            makedirs(log_directory, exist_ok=True)
+
+            self.log_file_location = join(log_directory, name + ".log")
+
+        self.file_log: bool = file_log
+        self.verbose = verbose
+        self.rate = rate
+        self.queue: List[Message] = []
+        self.lock = Lock()
+        self.running = False
+
+    def run(self) -> None:
+        """[summary]"""
+        self.running = True
+
+        Logger.verbose_console_log(verbose=self.verbose,
+                                    message="{} is running.".format(type(self)),
+                                    message_type=Message.MESSAGE_TYPE.STATUS)
+
+        while self.running:
+            self.lock.acquire()
+            if len(self.queue) > 0:
+                message_ready_to_log: Message = self.queue.pop(0)
+                self.lock.release()
             else:
-                self.log_location = log_location
+                self.lock.release()
+                sleep(1/self.rate)
+                continue
 
-            # Ensure log directory exists
-            makedirs(abspath(self.log_location), exist_ok=True)
+            self.log(message=message_ready_to_log.message, 
+                     message_type=message_ready_to_log.message_type, 
+                     use_timestamp=message_ready_to_log.use_timestamp)
+            if self.file_log:
+                Logger.log_to_file(log_file_location=self.log_file_location,
+                                   message=message_ready_to_log.message,
+                                   message_type=message_ready_to_log.message_type,
+                                   use_timestamp=message_ready_to_log.use_timestamp)
+            Logger.verbose_console_log(verbose=self.verbose,
+                                       message=message_ready_to_log.message,
+                                       message_type=message_ready_to_log.message_type,
+                                       use_timestamp=message_ready_to_log.use_timestamp)
 
-    def log(self, message: str, message_type: MESSAGE_TYPE) -> None:
+    def stop(self):
+        """[summary]"""
+        self.running = False
+        Logger.verbose_console_log(verbose=self.verbose,
+                                   message="{} is stopping.".format(type(self)),
+                                   message_type=Message.MESSAGE_TYPE.STATUS)
+
+    def add_message_to_queue(self, message: Message):
+        """[summary]
+
+        Args:
+            message (Message): [description]"""
+        self.lock.acquire()
+        self.queue.append(message)
+        self.lock.release()
+
+
+    def log(self, message: str, message_type: Message.MESSAGE_TYPE, use_timestamp: bool) -> None:
         """Logs a message to a file and to the console given a status.
         Args:
             message (str): [description]
             status (LogStatus): [description]"""
         if self.file_log:
-            Logger.log_to_file(log_file_location=self.log_location,
+            Logger.log_to_file(log_file_location=self.log_file_location,
                                message=message, message_type=message_type,
-                               use_timestamp=self.use_timestamp)
-        Logger.console_log(message=message, message_type=message_type, use_timestamp=self.use_timestamp)
+                               use_timestamp=use_timestamp)
+        Logger.verbose_console_log(verbose=self.verbose, 
+                                   message=message, 
+                                   message_type=message_type, 
+                                   use_timestamp=use_timestamp)
 
     @staticmethod
-    def log_to_file(log_file_location: str, message: str, message_type: MESSAGE_TYPE, use_timestamp: bool = True) -> None:
+    def log_to_file(log_file_location: str, message: str, message_type: Message.MESSAGE_TYPE, use_timestamp: bool = True) -> None:
         """[summary]
         Args:
             log_file_location (str): [description]
@@ -58,7 +118,7 @@ class Logger(object):
             else:
                 log_file.write(message + '\n')
 
-    def verbose_console_log(verbose: bool, message: str, message_type: MESSAGE_TYPE, use_timestamp: bool = True) -> None:
+    def verbose_console_log(verbose: bool, message: str, message_type: Message.MESSAGE_TYPE, use_timestamp: bool = True) -> None:
         """[summary]
         Args:
             verbose (bool): [description]
@@ -68,7 +128,7 @@ class Logger(object):
             Logger.console_log(message=message, message_type=message_type, use_timestamp=use_timestamp)
 
     @staticmethod
-    def console_log(message: str, message_type: MESSAGE_TYPE, use_timestamp: bool = True) -> None:
+    def console_log(message: str, message_type: Message.MESSAGE_TYPE, use_timestamp: bool = True) -> None:
         """[summary]
         Args:
             message (str): [description]
@@ -84,15 +144,15 @@ class Logger(object):
             from printy import printy
 
             try:
-                if message_type == Logger.MESSAGE_TYPE.SUCCESS:
+                if message_type == Message.MESSAGE_TYPE.SUCCESS:
                     printy(time_string + '[n]' + ' ' + message + '@', predefined='w')  # SUCCESS
-                elif message_type == Logger.MESSAGE_TYPE.FAIL:
+                elif message_type == Message.MESSAGE_TYPE.FAIL:
                     printy(time_string + '[r]' + ' ' + message + '@', predefined='w')  # FAIL
-                elif message_type == Logger.MESSAGE_TYPE.STATUS:
+                elif message_type == Message.MESSAGE_TYPE.STATUS:
                     printy(time_string + '[c]' + ' ' + message + '@', predefined='w')
-                elif message_type == Logger.MESSAGE_TYPE.MINOR_FAIL:
+                elif message_type == Message.MESSAGE_TYPE.MINOR_FAIL:
                     printy(time_string + '[r>]' + ' ' + message + '@', predefined='w') # Minor Fail
-                elif message_type == Logger.MESSAGE_TYPE.WARNING:
+                elif message_type == Message.MESSAGE_TYPE.WARNING:
                     printy(time_string + '[y]' + ' ' + message + '@', predefined='w')
                 else:
                     printy(time_string + '[r]' + ' ' + 'INVALID LOG FORMAT. Please check int value.' + '@', predefined='w')
@@ -102,30 +162,20 @@ class Logger(object):
         else:
             from colorama import Fore
 
-            if message_type == Logger.MESSAGE_TYPE.SUCCESS:
+            if message_type == Message.MESSAGE_TYPE.SUCCESS:
                 print(Fore.WHITE + time_string + Fore.GREEN + ' ' + message)  #SUCCESS
-            elif message_type == Logger.MESSAGE_TYPE.FAIL:
+            elif message_type == Message.MESSAGE_TYPE.FAIL:
                 print(Fore.WHITE + time_string + Fore.RED + ' ' + message)   #FAIL
-            elif message_type == Logger.MESSAGE_TYPE.STATUS:
+            elif message_type == Message.MESSAGE_TYPE.STATUS:
                 print(Fore.WHITE + time_string + Fore.CYAN + ' ' + message)
-            elif message_type == Logger.MESSAGE_TYPE.MINOR_FAIL:
+            elif message_type == Message.MESSAGE_TYPE.MINOR_FAIL:
                 print(Fore.WHITE + time_string + Fore.LIGHTRED_EX + ' ' + message)  #Minor fail
-            elif message_type == Logger.MESSAGE_TYPE.WARNING:
+            elif message_type == Message.MESSAGE_TYPE.WARNING:
                 print(Fore.WHITE + time_string + Fore.YELLOW + ' ' + message)
             else:
                 print(Fore.WHITE + time_string + Fore.RED + ' INVALID LOG FORMAT. Please check int value.')
 
-    class MESSAGE_TYPE(Enum):
-        """[summary]"""
-        SUCCESS = "SUCCESS"
-        FAIL = "FAIL"
-        STATUS = "STATUS"
-        MINOR_FAIL = "MINOR_FAIL"
-        WARNING = "WARNING"
-
-        def __str__(self) -> str:
-            return self.value
 
 if __name__ == "__main__":
-    for message_type in list(Logger.MESSAGE_TYPE):
+    for message_type in list(Message.MESSAGE_TYPE):
         Logger.console_log(message="[" + str(message_type) + "] Hello World.", message_type=message_type)
