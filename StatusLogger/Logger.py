@@ -57,7 +57,6 @@ class Logger(Thread):
             self.lock.acquire()
             if len(self.queue) > 0:
                 message_ready_to_log: Message = self.queue.pop(0)
-                print(message_ready_to_log.message)
                 self.lock.release()
 
                 if self.file_log:
@@ -72,7 +71,6 @@ class Logger(Thread):
                                                message_type=message_ready_to_log.message_type,
                                                use_timestamp=message_ready_to_log.use_timestamp)
             else:
-                print("queue empty")
                 self.lock.release()
                 sleep(1/self.rate)
                 continue
@@ -94,7 +92,6 @@ class Logger(Thread):
         self.lock.acquire()
         self.queue.append(message)
         self.lock.release()
-        print(self.queue)
 
     def log(self, message: str, message_type: Message.MESSAGE_TYPE, use_timestamp: bool) -> None:
         """Logs a message to a file and to the console given a status.
