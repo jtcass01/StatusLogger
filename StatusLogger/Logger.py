@@ -9,8 +9,8 @@ __email__ = "jacobtaylorcassady@outlook.com"
 from datetime import datetime
 from platform import system
 from typing import Union, List
-from os import getcwd, makedirs
-from os.path import abspath, join
+from os import getcwd, makedirs, remove
+from os.path import join, isfile
 from threading import Thread, Lock
 from time import sleep
 
@@ -19,7 +19,8 @@ from StatusLogger import Message
 
 class Logger(Thread):
     """"""
-    def __init__(self, name: str, file_log: bool = False, log_directory: Union[str, None] = None, verbose: bool = False, rate: float = 1) -> None:
+    def __init__(self, name: str, file_log: bool = False, log_directory: Union[str, None] = None, verbose: bool = False, 
+                 rate: float = 1, overwrite: bool = False) -> None:
         """Constructor.
         Args:
             file_log (bool, optional): [description]. Defaults to True.
@@ -34,6 +35,9 @@ class Logger(Thread):
 
             self.log_file_location = join(log_directory, name + ".log")
 
+            if isfile(self.log_file_location) and overwrite:
+                remove(self.log_file_location)
+
         self.file_log: bool = file_log
         self.verbose = verbose
         self.rate = rate
@@ -46,40 +50,41 @@ class Logger(Thread):
         self.running = True
 
         Logger.verbose_console_log(verbose=self.verbose,
-                                    message="{} is running.".format(type(self)),
+                                    message="{} {} is running.".format(type(self), self.name),
                                     message_type=Message.MESSAGE_TYPE.STATUS)
 
         while self.running:
             self.lock.acquire()
             if len(self.queue) > 0:
                 message_ready_to_log: Message = self.queue.pop(0)
+                print(message_ready_to_log.message)
                 self.lock.release()
-            else:
-                self.lock.release()
-                sleep(1/self.rate)
-                continue
 
-            self.log(message=message_ready_to_log.message, 
-                     message_type=message_ready_to_log.message_type, 
-                     use_timestamp=message_ready_to_log.use_timestamp)
-            if self.file_log:
-                Logger.log_to_file(log_file_location=self.log_file_location,
-                                   message=message_ready_to_log.message,
-                                   message_type=message_ready_to_log.message_type,
-                                   use_timestamp=message_ready_to_log.use_timestamp)
-            Logger.verbose_console_log(verbose=self.verbose,
+                if self.file_log:
+                    Logger.log_to_file(log_file_location=self.log_file_location,
                                        message=message_ready_to_log.message,
                                        message_type=message_ready_to_log.message_type,
                                        use_timestamp=message_ready_to_log.use_timestamp)
+
+                if self.verbose:
+                    Logger.verbose_console_log(verbose=self.verbose,
+                                               message=message_ready_to_log.message,
+                                               message_type=message_ready_to_log.message_type,
+                                               use_timestamp=message_ready_to_log.use_timestamp)
+            else:
+                print("queue empty")
+                self.lock.release()
+                sleep(1/self.rate)
+                continue
 
     def stop(self):
         """[summary]"""
         self.running = False
         Logger.verbose_console_log(verbose=self.verbose,
-                                   message="{} is stopping.".format(type(self)),
+                                   message="{} {} is stopping.".format(type(self), self.name),
                                    message_type=Message.MESSAGE_TYPE.STATUS)
 
-    def add_message_to_queue(self, message: Message):
+    def _add_message_to_queue(self, message: Message):
         """[summary]
 
         Args:
@@ -87,21 +92,14 @@ class Logger(Thread):
         self.lock.acquire()
         self.queue.append(message)
         self.lock.release()
-
+        print(self.queue)
 
     def log(self, message: str, message_type: Message.MESSAGE_TYPE, use_timestamp: bool) -> None:
         """Logs a message to a file and to the console given a status.
         Args:
             message (str): [description]
             status (LogStatus): [description]"""
-        if self.file_log:
-            Logger.log_to_file(log_file_location=self.log_file_location,
-                               message=message, message_type=message_type,
-                               use_timestamp=use_timestamp)
-        Logger.verbose_console_log(verbose=self.verbose, 
-                                   message=message, 
-                                   message_type=message_type, 
-                                   use_timestamp=use_timestamp)
+        self._add_message_to_queue(message=Message(message=message, message_type=message_type, use_timestamp=use_timestamp))
 
     @staticmethod
     def log_to_file(log_file_location: str, message: str, message_type: Message.MESSAGE_TYPE, use_timestamp: bool = True) -> None:
@@ -118,6 +116,7 @@ class Logger(Thread):
             else:
                 log_file.write(message + '\n')
 
+    @staticmethod
     def verbose_console_log(verbose: bool, message: str, message_type: Message.MESSAGE_TYPE, use_timestamp: bool = True) -> None:
         """[summary]
         Args:
@@ -177,5 +176,17 @@ class Logger(Thread):
 
 
 if __name__ == "__main__":
+    test_logger = Logger(name="test", file_log=True, verbose=True, rate=10, overwrite=True)
+    test_logger_2 = Logger(name="test2", file_log=True, verbose=True, rate=10)
+    test_logger.start()
+    test_logger_2.start()
+
     for message_type in list(Message.MESSAGE_TYPE):
-        Logger.console_log(message="[" + str(message_type) + "] Hello World.", message_type=message_type)
+        test_logger.log(message="Hello World. 1", message_type=message_type, use_timestamp=True)
+        test_logger_2.log(message="Hello World. 2", message_type=message_type, use_timestamp=True)
+
+    while len(test_logger.queue) > 0 or len(test_logger_2.queue) > 0:
+        sleep(0.1)
+
+    test_logger.stop()
+    test_logger_2.stop()
