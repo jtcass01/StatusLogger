@@ -78,7 +78,7 @@ class Logger(Thread):
                 continue
 
     def stop(self):
-        """[summary]"""
+        """Waits for the queue to empty, then sets the running flag to false and console logs the status."""
         while len(self.queue) > 0:
             sleep(1/self.rate)
         self.running = False
