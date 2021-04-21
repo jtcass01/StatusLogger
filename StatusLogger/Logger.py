@@ -79,9 +79,11 @@ class Logger(Thread):
 
     def stop(self):
         """[summary]"""
+        while len(self.queue) > 0:
+            sleep(1/self.rate)
         self.running = False
         Logger.verbose_console_log(verbose=self.verbose,
-                                   message="{} {} is stopping.".format(type(self), self.name),
+                                   message="{} {} has stopped.".format(type(self), self.name),
                                    message_type=Message.MESSAGE_TYPE.STATUS)
 
     def _add_message_to_queue(self, message: Message):
@@ -184,9 +186,6 @@ if __name__ == "__main__":
     for message_type in list(Message.MESSAGE_TYPE):
         test_logger.log(message="Hello World. 1", message_type=message_type, use_timestamp=True)
         test_logger_2.log(message="Hello World. 2", message_type=message_type, use_timestamp=True)
-
-    while len(test_logger.queue) > 0 or len(test_logger_2.queue) > 0:
-        sleep(0.1)
 
     test_logger.stop()
     test_logger_2.stop()
