@@ -15,7 +15,7 @@ from threading import Thread, Lock
 from time import sleep
 
 # StatusLogger Modules
-from StatusLogger import Message
+from StatusLogger.Message import Message
 
 class Logger(Thread):
     """"""
@@ -142,33 +142,33 @@ class Logger(Thread):
             from printy import printy
 
             try:
-                if message_type == Message.MESSAGE_TYPE.SUCCESS:
+                if message_type.value == 'SUCCESS':
                     printy(time_string + '[n]' + ' ' + message + '@', predefined='w')  # SUCCESS
-                elif message_type == Message.MESSAGE_TYPE.FAIL:
+                elif message_type.value == 'FAIL':
                     printy(time_string + '[r]' + ' ' + message + '@', predefined='w')  # FAIL
-                elif message_type == Message.MESSAGE_TYPE.STATUS:
+                elif message_type.value == 'STATUS':
                     printy(time_string + '[c]' + ' ' + message + '@', predefined='w')
-                elif message_type == Message.MESSAGE_TYPE.MINOR_FAIL:
+                elif message_type.value == 'MINOR_FAIL':
                     printy(time_string + '[r>]' + ' ' + message + '@', predefined='w') # Minor Fail
-                elif message_type == Message.MESSAGE_TYPE.WARNING:
+                elif message_type.value == 'WARNING':
                     printy(time_string + '[y]' + ' ' + message + '@', predefined='w')
                 else:
                     printy(time_string + '[r]' + ' ' + 'INVALID LOG FORMAT. Please check int value.' + '@', predefined='w')
-            except:
-                printy(time_string + '[r]' + ' ' + 'Failed to understand log call. Wrong format when calling log.' + '@', predefined='w') # wrong format
+            except Exception as error:
+                printy(time_string + '[r]' + ' ' + 'Failed to understand log call. Wrong format when calling log producing error: ' + str(error) + '@', predefined='w') # wrong format
 
         else:
             from colorama import Fore
 
-            if message_type == Message.MESSAGE_TYPE.SUCCESS:
+            if message_type.value == 'SUCCESS':
                 print(Fore.WHITE + time_string + Fore.GREEN + ' ' + message)  #SUCCESS
-            elif message_type == Message.MESSAGE_TYPE.FAIL:
+            elif message_type.value == 'FAIL':
                 print(Fore.WHITE + time_string + Fore.RED + ' ' + message)   #FAIL
-            elif message_type == Message.MESSAGE_TYPE.STATUS:
+            elif message_type.value == 'FAIL':
                 print(Fore.WHITE + time_string + Fore.CYAN + ' ' + message)
-            elif message_type == Message.MESSAGE_TYPE.MINOR_FAIL:
+            elif message_type.value == 'MINOR_FAIL':
                 print(Fore.WHITE + time_string + Fore.LIGHTRED_EX + ' ' + message)  #Minor fail
-            elif message_type == Message.MESSAGE_TYPE.WARNING:
+            elif message_type.value == 'WARNING':
                 print(Fore.WHITE + time_string + Fore.YELLOW + ' ' + message)
             else:
                 print(Fore.WHITE + time_string + Fore.RED + ' INVALID LOG FORMAT. Please check int value.')
