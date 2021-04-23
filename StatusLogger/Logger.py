@@ -19,6 +19,8 @@ from StatusLogger.Message import Message
 
 class Logger(Thread):
     """"""
+    DEFAULT_LOG_DIRECTORY: str = join(getcwd(), "logs")
+
     def __init__(self, name: str, file_log: bool = False, log_directory: Union[str, None] = None, verbose: bool = False, 
                  rate: float = 1, overwrite: bool = False) -> None:
         """Constructor.
@@ -29,16 +31,18 @@ class Logger(Thread):
 
         if file_log:
             if log_directory is None:
-                log_directory = join(getcwd(), "logs")
+                log_directory = Logger.DEFAULT_LOG_DIRECTORY
 
             makedirs(log_directory, exist_ok=True)
 
+            self.log_directory = log_directory
             self.log_file_location = join(log_directory, name + ".log")
 
             if isfile(self.log_file_location) and overwrite:
                 remove(self.log_file_location)
 
         self.file_log: bool = file_log
+        self.overwrite: bool = overwrite
         self.verbose = verbose
         self.rate = rate
         self.queue: List[Message] = []
