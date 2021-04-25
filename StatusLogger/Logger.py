@@ -168,7 +168,7 @@ class Logger(Thread):
                 print(Fore.WHITE + time_string + Fore.GREEN + ' ' + message)  #SUCCESS
             elif message_type.value == 'FAIL':
                 print(Fore.WHITE + time_string + Fore.RED + ' ' + message)   #FAIL
-            elif message_type.value == 'FAIL':
+            elif message_type.value == 'STATUS':
                 print(Fore.WHITE + time_string + Fore.CYAN + ' ' + message)
             elif message_type.value == 'MINOR_FAIL':
                 print(Fore.WHITE + time_string + Fore.LIGHTRED_EX + ' ' + message)  #Minor fail
