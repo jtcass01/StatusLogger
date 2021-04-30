@@ -69,11 +69,10 @@ class Logger(Thread):
                                        message_type=message_ready_to_log.message_type,
                                        use_timestamp=message_ready_to_log.use_timestamp)
 
-                if self.verbose:
-                    Logger.verbose_console_log(verbose=self.verbose,
-                                               message=message_ready_to_log.message,
-                                               message_type=message_ready_to_log.message_type,
-                                               use_timestamp=message_ready_to_log.use_timestamp)
+                Logger.verbose_console_log(verbose=self.verbose,
+                                           message=message_ready_to_log.message,
+                                           message_type=message_ready_to_log.message_type,
+                                           use_timestamp=message_ready_to_log.use_timestamp)
             else:
                 self.lock.release()
                 sleep(1/self.rate)
@@ -102,7 +101,19 @@ class Logger(Thread):
         Args:
             message (str): [description]
             status (LogStatus): [description]"""
-        self._add_message_to_queue(message=Message(message=message, message_type=message_type, use_timestamp=use_timestamp))
+        if self.running:
+            self._add_message_to_queue(message=Message(message=message, message_type=message_type, use_timestamp=use_timestamp))
+        else:
+            if self.file_log:
+                Logger.log_to_file(log_file_location=self.log_file_location,
+                                    message=message,
+                                    message_type=message_type,
+                                    use_timestamp=use_timestamp)
+
+            Logger.verbose_console_log(verbose=self.verbose,
+                                       message=message,
+                                       message_type=message_type,
+                                       use_timestamp=use_timestamp)
 
     @staticmethod
     def log_to_file(log_file_location: str, message: str, message_type: Message.MESSAGE_TYPE, use_timestamp: bool = True) -> None:
