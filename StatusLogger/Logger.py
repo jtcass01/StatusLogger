@@ -96,7 +96,8 @@ class Logger(Thread):
         self.queue.append(message)
         self.lock.release()
 
-    def log(self, message: str, message_type: Message.MESSAGE_TYPE, use_timestamp: bool = True) -> None:
+    def log(self, message: str, message_type: Message.MESSAGE_TYPE = Message.MESSAGE_TYPE.STATUS, 
+            use_timestamp: bool = True) -> None:
         """Logs a message to a file and to the console given a status.
         Args:
             message (str): [description]
@@ -115,8 +116,25 @@ class Logger(Thread):
                                        message_type=message_type,
                                        use_timestamp=use_timestamp)
 
+    def log_boolean(self, message: str, boolean: bool, use_timestamp: bool = True, 
+                    true_type: Message.MESSAGE_TYPE = Message.MESSAGE_TYPE.SUCCESS,
+                    false_type: Message.MESSAGE_TYPE = Message.MESSAGE_TYPE.FAIL) -> None:
+        """[summary]
+
+        Args:
+            message (str): [description]
+            boolean (bool): [description]
+            use_timestamp (bool, optional): [description]. Defaults to True."""
+        if boolean:
+            message_type: Message.MESSAGE_TYPE = true_type
+        else:
+            message_type: Message.MESSAGE_TYPE = false_type
+
+        self.log(message=message, message_type=message_type, use_timestamp=use_timestamp)
+
     @staticmethod
-    def log_to_file(log_file_location: str, message: str, message_type: Message.MESSAGE_TYPE, use_timestamp: bool = True) -> None:
+    def log_to_file(log_file_location: str, message: str, message_type: Message.MESSAGE_TYPE = Message.MESSAGE_TYPE.STATUS, 
+                    use_timestamp: bool = True) -> None:
         """[summary]
         Args:
             log_file_location (str): [description]
@@ -131,7 +149,8 @@ class Logger(Thread):
                 log_file.write(message + '\n')
 
     @staticmethod
-    def verbose_console_log(verbose: bool, message: str, message_type: Message.MESSAGE_TYPE, use_timestamp: bool = True) -> None:
+    def verbose_console_log(verbose: bool, message: str, message_type: Message.MESSAGE_TYPE = Message.MESSAGE_TYPE.STATUS, 
+                            use_timestamp: bool = True) -> None:
         """[summary]
         Args:
             verbose (bool): [description]
@@ -141,7 +160,8 @@ class Logger(Thread):
             Logger.console_log(message=message, message_type=message_type, use_timestamp=use_timestamp)
 
     @staticmethod
-    def console_log(message: str, message_type: Message.MESSAGE_TYPE, use_timestamp: bool = True) -> None:
+    def console_log(message: str, message_type: Message.MESSAGE_TYPE = Message.MESSAGE_TYPE.STATUS, 
+                    use_timestamp: bool = True) -> None:
         """[summary]
         Args:
             message (str): [description]
